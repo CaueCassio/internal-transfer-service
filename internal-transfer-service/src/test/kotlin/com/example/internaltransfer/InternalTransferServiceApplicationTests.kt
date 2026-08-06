@@ -9,5 +9,4 @@ class InternalTransferServiceApplicationTests {
     @Test
     fun contextLoads() {
     }
-
 }
