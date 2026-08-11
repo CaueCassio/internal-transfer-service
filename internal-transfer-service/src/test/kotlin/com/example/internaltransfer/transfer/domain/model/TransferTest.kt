@@ -11,7 +11,7 @@ class TransferTest {
     @Test
     fun `deve retornar true quando conta de origem e destino forem iguais`(){
         val transfer = Transfer(
-            transfer = UUID.randomUUID(),
+            transferId = UUID.randomUUID(),
             sourceAccountId = "caue-account-1",
             destinationAccountId = "caue-account-1",
             amount = Money.of(BigDecimal("100.00"), Currency.BRL),
@@ -23,7 +23,7 @@ class TransferTest {
     @Test
     fun `deve retornar false quando conta de origem e destino forem diferentes`(){
         val transfer = Transfer(
-            transfer = UUID.randomUUID(),
+            transferId = UUID.randomUUID(),
             sourceAccountId = "caue-account-1",
             destinationAccountId = "caue-account-2",
             amount = Money.of(BigDecimal("100.00"), Currency.BRL),

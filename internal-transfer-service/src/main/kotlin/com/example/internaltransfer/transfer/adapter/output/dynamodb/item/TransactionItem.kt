@@ -30,7 +30,7 @@ data class TransactionItem(
             processedAt: Instant
         ): TransactionItem =
             TransactionItem(
-                transferId = transfer.transfer.toString(),
+                transferId = transfer.transferId.toString(),
                 sourceAccountId = transfer.sourceAccountId,
                 destinationAccountId = transfer.destinationAccountId,
                 amount = transfer.amount.amount,
