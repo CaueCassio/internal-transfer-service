@@ -13,6 +13,7 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 import software.amazon.awssdk.services.dynamodb.model.Put
 import software.amazon.awssdk.services.dynamodb.model.TransactWriteItem
 import software.amazon.awssdk.services.dynamodb.model.TransactWriteItemsRequest
+import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledException
 import software.amazon.awssdk.services.dynamodb.model.Update
 
 
@@ -28,6 +29,17 @@ class DynamodbTransferPersistenceAdapter(
 
     private val transactionSchema =
         TableSchema.fromBean(TransactionItem::class.java)
+
+    private fun handleTransactionCancellation(
+        exception: TransactionCanceledException
+    ){
+        val transactionReason = exception.cancellationReasons().getOrNull(2)
+
+        if(transactionReason?.code() == "ConditionalCheckFailed" ) {
+            return
+        }
+        throw exception
+    }
 
     override fun executeAtomically(
         transfer: Transfer,
@@ -145,12 +157,15 @@ class DynamodbTransferPersistenceAdapter(
                     .put(transactionPut)
                     .build()
             )
-            .clientRequestToken(
-                transfer.transferId.toString()
-            )
             .build()
 
-        dynamoDbClient.transactWriteItems(request)
+        try {
+            dynamoDbClient.transactWriteItems(request)
+
+        } catch (exception: TransactionCanceledException){
+            handleTransactionCancellation(exception)
+        }
+
 
     }
 }
