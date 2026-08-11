@@ -4,7 +4,7 @@ import java.time.Instant
 import java.util.UUID
 
 data class Transfer(
-    val transfer: UUID,
+    val transferId: UUID,
     val sourceAccountId: String,
     val destinationAccountId: String,
     val amount: Money,

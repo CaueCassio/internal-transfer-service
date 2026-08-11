@@ -146,7 +146,7 @@ class DynamodbTransferPersistenceAdapter(
                     .build()
             )
             .clientRequestToken(
-                transfer.transfer.toString()
+                transfer.transferId.toString()
             )
             .build()
 
