@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: internal-transfer-service
+
+app:
+  dynamodb:
+    endpoint: ${DYNAMODB_ENDPOINT:http://localhost:4566}
