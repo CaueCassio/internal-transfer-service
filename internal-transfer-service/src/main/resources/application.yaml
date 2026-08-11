@@ -1,3 +1,10 @@
 spring:
   application:
     name: internal-transfer-service
+
+
+app:
+  dynamodb:
+    region: ${AWS_REGION:us-east-1}
+    accounts-table: ${ACCOUNTS_TABLE:accounts}
+    transactions-table: ${TRANSACTIONS_TABLE:transactions}
