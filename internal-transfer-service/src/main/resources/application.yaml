@@ -2,9 +2,27 @@ spring:
   application:
     name: internal-transfer-service
 
+    kafka:
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+      consumer:
+        group-id: internal-transfer-service
+        auto-offset-reset: earliest
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+        properties:
+          "[spring.json.value.default.type]": "com.example.internaltransfer.transfer.adapter.input.kafka.event.TransferRequestedEvent"
+          "[spring.json.trusted.packages]": "com.example.internaltransfer.transfer.adapter.input.kafka.event"
+          "[spring.json.use.type.headers]": false
+
 
 app:
   dynamodb:
     region: ${AWS_REGION:us-east-1}
     accounts-table: ${ACCOUNTS_TABLE:accounts}
     transactions-table: ${TRANSACTIONS_TABLE:transactions}
+
+  kafka:
+    topics:
+      transfer-requested: ${TRANSFER_REQUESTED_TOPIC:transfer-requested}
