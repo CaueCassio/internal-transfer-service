@@ -7,6 +7,7 @@ import com.example.internaltransfer.transfer.domain.exception.DestinationAccount
 import com.example.internaltransfer.transfer.domain.exception.InsufficientBalanceException
 import com.example.internaltransfer.transfer.domain.exception.InvalidTransferAmountException
 import com.example.internaltransfer.transfer.domain.exception.SourceAccountNotFoundException
+import com.example.internaltransfer.transfer.domain.exception.TransferBusinessException
 import com.example.internaltransfer.transfer.domain.model.Transfer
 
 class ProcessTransferService(
@@ -16,6 +17,24 @@ class ProcessTransferService(
 
     override fun execute(transfer: Transfer) {
 
+        try {
+            process(transfer)
+        } catch (exception: TransferBusinessException) {
+            transferPersistencePort.registerFailure(
+                transfer = transfer,
+                reason = exception.reason
+            )
+            throw exception
+        }
+    }
+
+    private fun validateTransfer(transfer: Transfer) {
+        if(!transfer.amount.isPositive()){
+            throw InvalidTransferAmountException()
+        }
+    }
+
+    private fun process(transfer: Transfer) {
         validateTransfer(transfer)
 
         val sourceAccount =
@@ -37,12 +56,5 @@ class ProcessTransferService(
             sourceAccount = sourceAccount,
             destinationAccount = destinationAccount
         )
-
-    }
-
-    private fun validateTransfer(transfer: Transfer) {
-        if(!transfer.amount.isPositive()){
-            throw InvalidTransferAmountException()
-        }
     }
 }
