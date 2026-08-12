@@ -1,6 +1,7 @@
 package com.example.internaltransfer.transfer.adapter.output.dynamodb.repository
 
 import com.example.internaltransfer.transfer.adapter.output.dynamodb.config.DynamoDbProperties
+import com.example.internaltransfer.transfer.adapter.output.dynamodb.exception.ConcurrentTransferException
 import com.example.internaltransfer.transfer.adapter.output.dynamodb.item.TransactionItem
 import com.example.internaltransfer.transfer.application.port.output.TransferPersistencePort
 import com.example.internaltransfer.transfer.domain.model.Account
@@ -32,11 +33,25 @@ class DynamodbTransferPersistenceAdapter(
 
     private fun handleTransactionCancellation(
         exception: TransactionCanceledException
-    ){
-        val transactionReason = exception.cancellationReasons().getOrNull(2)
+    ) {
+        val reasons = exception.cancellationReasons()
+        val sourceReason = reasons.getOrNull(0)
+        val destinationReason = reasons.getOrNull(1)
+        val transactionReason = reasons.getOrNull(2)
 
-        if(transactionReason?.code() == "ConditionalCheckFailed" ) {
+        if (transactionReason?.code() == "ConditionalCheckFailed") {
             return
+        }
+
+        if (reasons.any { it.code() == "TransactionConflict" }) {
+            throw ConcurrentTransferException(exception)
+        }
+
+        if (
+            sourceReason?.code() == "ConditionalCheckFailed" ||
+            destinationReason?.code() == "ConditionalCheckFailed"
+        ) {
+            throw ConcurrentTransferException(exception)
         }
         throw exception
     }
