@@ -1,6 +1,7 @@
 package com.example.internaltransfer.transfer.adapter.output.dynamodb.item
 
 import com.example.internaltransfer.transfer.domain.model.Transfer
+import com.example.internaltransfer.transfer.domain.model.TransferFailureReason
 import com.example.internaltransfer.transfer.domain.model.TransferStatus
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey
@@ -19,7 +20,7 @@ data class TransactionItem(
     var currency: String? = null,
     var requestedAt: Instant? = null,
     var processedAt: Instant? = null,
-
+    var failureReason: String? = null,
     var status: String? = null
 ) {
 
@@ -39,5 +40,22 @@ data class TransactionItem(
                 processedAt = processedAt,
                 status = TransferStatus.COMPLETED.name
            )
+
+        fun failed(
+            transfer: Transfer,
+            reason: TransferFailureReason,
+            processedAt: Instant
+        ): TransactionItem =
+            TransactionItem(
+                transferId = transfer.transferId.toString(),
+                sourceAccountId = transfer.sourceAccountId,
+                destinationAccountId = transfer.destinationAccountId,
+                amount = transfer.amount.amount,
+                currency = transfer.amount.currency.name,
+                requestedAt = transfer.requestedAt,
+                processedAt = processedAt,
+                status = TransferStatus.FAILED.name,
+                failureReason = reason.name
+            )
       }
  }

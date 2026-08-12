@@ -7,6 +7,7 @@ import com.example.internaltransfer.transfer.application.port.output.TransferPer
 import com.example.internaltransfer.transfer.domain.model.Account
 import com.example.internaltransfer.transfer.domain.model.AccountStatus
 import com.example.internaltransfer.transfer.domain.model.Transfer
+import com.example.internaltransfer.transfer.domain.model.TransferFailureReason
 import org.springframework.stereotype.Repository
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
@@ -182,5 +183,35 @@ class DynamodbTransferPersistenceAdapter(
         }
 
 
+    }
+
+    override fun registerFailure(
+        transfer: Transfer,
+        reason: TransferFailureReason
+    ) {
+        val transactionItem = TransactionItem.failed(
+            transfer = transfer,
+            reason = reason,
+            processedAt = Instant.now(clock)
+        )
+
+        dynamoDbClient.putItem { builder ->
+            builder
+                .tableName(properties.transactionsTable)
+                .item(
+                    transactionSchema.itemToMap(
+                        transactionItem,
+                        true
+                    )
+                )
+                .conditionExpression(
+                    "attribute_not_exists(#transferId)"
+                )
+                .expressionAttributeNames(
+                    mapOf(
+                        "#transferId" to "transferId"
+                    )
+                )
+        }
     }
 }
